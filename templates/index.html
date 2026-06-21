@@ -1,0 +1,527 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forensic Log Analyzer</title>
+    <!-- Bootstrap 5 Dark Theme (Cyberpunk inspired) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Font (Orbitron for cyberpunk vibe) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- Cyberpunk Premium Dark Theme ---------- */
+        body {
+            background-color: #0a0a0f;
+            color: #c8d0d8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .sidebar {
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(8px);
+            border-right: 1px solid #00e5ff40;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            padding: 20px 0;
+            box-shadow: 4px 0 20px rgba(0, 229, 255, 0.1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar .brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            text-align: center;
+            padding: 10px 0 30px;
+            color: #00e5ff;
+            text-shadow: 0 0 20px #00e5ff88, 0 0 40px #00e5ff44;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #00e5ff30;
+            margin-bottom: 20px;
+        }
+        .sidebar .nav-link {
+            color: #a0b0c0;
+            padding: 12px 25px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            margin-right: 10px;
+            color: #00e5ff;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(0, 229, 255, 0.08);
+            color: #ffffff;
+            border-left-color: #00e5ff;
+            box-shadow: inset 0 0 30px rgba(0, 229, 255, 0.05);
+        }
+        .sidebar .nav-link.active i {
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff88;
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 20px 30px;
+            height: 100vh;
+            overflow-y: auto;
+            background: radial-gradient(ellipse at top left, #12121f, #08080e);
+        }
+        /* Glowing header */
+        .glow-header {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #00e5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 229, 255, 0.3);
+            letter-spacing: 3px;
+            border-bottom: 2px solid #00e5ff40;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        /* Metric cards */
+        .metric-card {
+            background: rgba(20, 25, 40, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid #00e5ff30;
+            border-radius: 16px;
+            padding: 18px 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: #ff00ff60;
+            box-shadow: 0 12px 40px rgba(255, 0, 255, 0.15);
+        }
+        .metric-card .label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #90a0b0;
+        }
+        .metric-card .value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+        }
+        .metric-card .icon {
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+        /* Table */
+        .log-table-container {
+            background: rgba(16, 20, 35, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid #00e5ff20;
+            border-radius: 16px;
+            padding: 10px 0;
+            overflow-x: auto;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .log-table {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+        .log-table thead th {
+            background: rgba(0, 229, 255, 0.05);
+            border-bottom: 2px solid #00e5ff40;
+            color: #00e5ff;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .log-table tbody td {
+            padding: 8px 10px;
+            vertical-align: middle;
+            border-bottom: 1px solid #2a2a3a;
+            color: #d0d8e0;
+        }
+        .log-table tbody tr:hover {
+            background: rgba(0, 229, 255, 0.05);
+        }
+        /* Badges */
+        .badge-threat-info {
+            background: #2a6b2a;
+            color: #b0ffb0;
+        }
+        .badge-threat-warning {
+            background: #9e6b00;
+            color: #ffe066;
+        }
+        .badge-threat-critical {
+            background: #9e0000;
+            color: #ffb0b0;
+            animation: pulse-badge 1.5s infinite;
+        }
+        @keyframes pulse-badge {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.6); }
+            70% { box-shadow: 0 0 10px 5px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+        /* Flashing alert banner */
+        #alertBanner {
+            display: none;
+            background: rgba(200, 0, 0, 0.85);
+            color: #fff;
+            font-weight: bold;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ff4444;
+            animation: flash-banner 0.8s infinite alternate;
+            backdrop-filter: blur(4px);
+            text-align: center;
+        }
+        @keyframes flash-banner {
+            0% { background: rgba(200, 0, 0, 0.7); box-shadow: 0 0 20px #ff000088; }
+            100% { background: rgba(255, 0, 0, 0.9); box-shadow: 0 0 40px #ff0000cc; }
+        }
+        /* Scrollbar custom */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a2a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00e5ff60;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff00ff80;
+        }
+        /* Responsive tweaks */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                margin-left: 200px;
+                padding: 15px;
+            }
+            .glow-header {
+                font-size: 1.6rem;
+            }
+        }
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="brand">
+            <i class="fas fa-shield-halved me-2"></i>LOG·FORGE
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-list"></i> Live Logs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-ban"></i> Blocked IPs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-exclamation-triangle"></i> Alerts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Flashing Alert Banner -->
+        <div id="alertBanner">
+            <i class="fas fa-bolt me-2"></i> CRITICAL INTRUSION SIGNATURE DETECTED — IMMEDIATE ACTION REQUIRED
+        </div>
+
+        <!-- Header -->
+        <div class="glow-header">
+            <i class="fas fa-terminal me-3"></i>FORENSIC DETECTION LOGS
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="metric-card d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="label">Total Incidents</div>
+                        <div class="value" id="totalIncidents">0</div>
+                    </div>
+                    <div class="icon text-info"><i class="fas fa-database"></i></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="label">Blocked IPs</div>
+                        <div class="value" id="blockedIPs">0</div>
+                    </div>
+                    <div class="icon text-danger"><i class="fas fa-user-slash"></i></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="metric-card d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="label">Critical Alerts</div>
+                        <div class="value" id="criticalAlerts">0</div>
+                    </div>
+                    <div class="icon text-warning"><i class="fas fa-exclamation-circle"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Table -->
+        <div class="log-table-container">
+            <table class="table log-table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 18%;">Timestamp</th>
+                        <th style="width: 12%;">IP</th>
+                        <th style="width: 8%;">Method</th>
+                        <th style="width: 18%;">Path</th>
+                        <th style="width: 8%;">Status</th>
+                        <th style="width: 12%;">Threat Level</th>
+                        <th style="width: 12%;">Attack Type</th>
+                        <th style="width: 12%;">Message</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody">
+                    <!-- Rows inserted dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bootstrap & dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // --------------------------------------------------------------------
+        // DOM refs
+        // --------------------------------------------------------------------
+        const logBody = document.getElementById('logTableBody');
+        const totalIncidentsEl = document.getElementById('totalIncidents');
+        const blockedIPsEl = document.getElementById('blockedIPs');
+        const criticalAlertsEl = document.getElementById('criticalAlerts');
+        const alertBanner = document.getElementById('alertBanner');
+
+        // Helper to format timestamp (local time)
+        function formatTime(iso) {
+            const d = new Date(iso);
+            return d.toLocaleTimeString('en-US', { hour12: false }) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+        }
+
+        // Threat badge mapping
+        function threatBadge(level) {
+            const map = {
+                'info': 'badge-threat-info',
+                'warning': 'badge-threat-warning',
+                'critical': 'badge-threat-critical'
+            };
+            return map[level] || 'badge-threat-info';
+        }
+
+        // Add a single log row to the table
+        function addLogRow(log) {
+            const tr = document.createElement('tr');
+            // Timestamp
+            const tdTime = document.createElement('td');
+            tdTime.textContent = formatTime(log.timestamp);
+            tr.appendChild(tdTime);
+
+            // IP
+            const tdIp = document.createElement('td');
+            tdIp.textContent = log.ip;
+            tr.appendChild(tdIp);
+
+            // Method
+            const tdMethod = document.createElement('td');
+            tdMethod.textContent = log.method;
+            tr.appendChild(tdMethod);
+
+            // Path
+            const tdPath = document.createElement('td');
+            tdPath.textContent = log.path;
+            tr.appendChild(tdPath);
+
+            // Status
+            const tdStatus = document.createElement('td');
+            tdStatus.textContent = log.status;
+            tr.appendChild(tdStatus);
+
+            // Threat Level (badge)
+            const tdThreat = document.createElement('td');
+            const badge = document.createElement('span');
+            badge.className = `badge ${threatBadge(log.threat_level)}`;
+            badge.textContent = log.threat_level.toUpperCase();
+            tdThreat.appendChild(badge);
+            tr.appendChild(tdThreat);
+
+            // Attack Type
+            const tdAttack = document.createElement('td');
+            tdAttack.textContent = log.attack_type || '—';
+            tr.appendChild(tdAttack);
+
+            // Message
+            const tdMsg = document.createElement('td');
+            tdMsg.textContent = log.message;
+            tr.appendChild(tdMsg);
+
+            // Prepend to keep newest on top
+            logBody.prepend(tr);
+
+            // Limit rows (keep last 100)
+            while (logBody.children.length > 100) {
+                logBody.removeChild(logBody.lastChild);
+            }
+        }
+
+        // Update dashboard counters
+        function updateCounters(counters) {
+            totalIncidentsEl.textContent = counters.total_incidents;
+            blockedIPsEl.textContent = counters.blocked_ips;
+            criticalAlertsEl.textContent = counters.critical_alerts;
+        }
+
+        // Show flashing banner for critical alerts (auto‑hide after 5s)
+        let bannerTimeout = null;
+        function flashAlert() {
+            alertBanner.style.display = 'block';
+            if (bannerTimeout) {
+                clearTimeout(bannerTimeout);
+                bannerTimeout = null;
+            }
+            bannerTimeout = setTimeout(() => {
+                alertBanner.style.display = 'none';
+                bannerTimeout = null;
+            }, 5000);
+        }
+
+        // Process a single log (from initial load or stream)
+        function processLog(log) {
+            addLogRow(log);
+            // Counters are updated by the backend, but we also maintain them via stream events.
+            // However the counters in the event are not included, so we rely on backend
+            // state. We'll fetch counters periodically or update from a separate message.
+            // Better: when we receive a critical log, we increment criticalAlerts locally? But counts could drift.
+            // We'll refresh counters from the backend every few seconds via polling.
+            // For simplicity, we'll use the event's log to update counters locally? 
+            // But we also have the initial load which doesn't include counters.
+            // We'll implement a separate polling for counters every 5 seconds.
+            if (log.threat_level === 'critical') {
+                flashAlert();
+                // increment counters locally? Better to fetch from API to be accurate.
+                // We'll call a function to refresh counters.
+                refreshCounters();
+            }
+        }
+
+        // Refresh counters from /api/counters (we don't have that endpoint; we'll use /api/logs to get length? 
+        // Actually we have counters global but not exposed. We'll add a /api/counters route.
+        // But for simplicity, we can parse the count from the logs array? Not accurate.
+        // Instead, we'll add a /api/counters in app.py. Let's add it.
+
+        // We'll create a new endpoint /api/counters that returns JSON of counters.
+        // I'll add that in app.py now. For completeness, I'll add it.
+
+        // Since we are coding app.py separately, we'll include it there. But for now, we'll implement a fetch to /api/counters.
+
+        // I'll update app.py to include /api/counters.
+        // But in this HTML, we'll define the function.
+        function refreshCounters() {
+            fetch('/api/counters')
+                .then(res => res.json())
+                .then(data => {
+                    totalIncidentsEl.textContent = data.total_incidents;
+                    blockedIPsEl.textContent = data.blocked_ips;
+                    criticalAlertsEl.textContent = data.critical_alerts;
+                })
+                .catch(err => console.warn('Counter refresh failed', err));
+        }
+
+        // --------------------------------------------------------------------
+        // Initial load: get all logs and counters
+        // --------------------------------------------------------------------
+        async function init() {
+            try {
+                // Load logs
+                const logsRes = await fetch('/api/logs');
+                const logsData = await logsRes.json();
+                logsData.forEach(log => addLogRow(log));
+
+                // Load counters
+                await refreshCounters();
+
+                // Start SSE stream for new logs
+                const eventSource = new EventSource('/stream');
+                eventSource.onmessage = function(event) {
+                    try {
+                        const log = JSON.parse(event.data);
+                        processLog(log);
+                        // Also refresh counters on every event to be safe
+                        refreshCounters();
+                    } catch (e) {
+                        console.warn('SSE parse error', e);
+                    }
+                };
+                eventSource.onerror = function() {
+                    console.warn('SSE connection error, will retry...');
+                };
+            } catch (err) {
+                console.error('Initialization error', err);
+            }
+        }
+
+        // Also refresh counters every 10 seconds as fallback
+        setInterval(refreshCounters, 10000);
+
+        // Start
+        init();
+    </script>
+
+</body>
+</html>
