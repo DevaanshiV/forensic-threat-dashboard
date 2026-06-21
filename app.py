@@ -194,7 +194,7 @@ def simulation_worker():
         time.sleep(random.uniform(1.0, 3.0))
 
 # Start the background thread when the first request arrives
-@app.before_first_request
+@app.before_request
 def start_simulation():
     if not simulation_running:
         thread = threading.Thread(target=simulation_worker, daemon=True)
